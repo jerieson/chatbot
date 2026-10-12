@@ -9,6 +9,7 @@
 
 import argparse
 import csv
+import difflib
 import json
 import re
 import sys
@@ -27,7 +28,9 @@ CSV_FILES = [
     "pokemon_stats", "pokemon_types", "types", "type_efficacy", "pokemon_evolution",
     "evolution_triggers", "moves", "move_names", "move_effect_prose", "items", "item_names",
     "item_prose", "item_categories", "pokemon_moves", "version_groups", "versions",
-    "version_names", "generations", "location_names",
+    "version_names", "generations", "location_names", "abilities", "ability_names",
+    "ability_prose", "pokemon_abilities", "pokemon_egg_groups", "egg_group_prose", "growth_rate_prose",
+    "pokemon_forms", "pokemon_form_names",
 ]
 
 ENGLISH = "9"
@@ -57,6 +60,10 @@ SPECIAL_TRIGGERS = {
     "gimmighoul-coins": "after collecting 999 Gimmighoul Coins",
     "meltan-candies": "by feeding it 400 Meltan Candies in Pokemon GO",
 }
+MEGA_STONE_CATEGORY = "44"
+PRIMAL_ORBS = {"groudon": "red-orb", "kyogre": "blue-orb"}
+# Mega Evolves by knowing a move instead of holding a stone
+STONELESS_MEGAS = {"rayquaza": "dragon-ascent"}
 # Not flagged in PokeAPI; the community definition (600 base stat total, three-stage line)
 PSEUDO_LEGENDARIES = [
     "dragonite", "tyranitar", "salamence", "metagross", "garchomp",
@@ -201,17 +208,45 @@ def build():
     # Default form of each species (e.g. deoxys-normal for deoxys)
     default_pokemon = {r["species_id"]: r for r in read("pokemon") if r["is_default"] == "1"}
     pokemon_species_id = {r["id"]: r["species_id"] for r in default_pokemon.values()}
+    # Mega Evolutions and Primal Reversions get their own types, stats and abilities
+    mega_rows = [r for r in read("pokemon") if re.search(r"-(mega|primal)(-|$)", r["identifier"])]
+    loaded_ids = set(pokemon_species_id) | {r["id"] for r in mega_rows}
 
     stats = defaultdict(dict)
+    ev_yield = defaultdict(dict)
     for r in read("pokemon_stats"):
-        if r["pokemon_id"] in pokemon_species_id:
+        if r["pokemon_id"] in loaded_ids:
             stats[r["pokemon_id"]][STAT_KEYS[r["stat_id"]]] = int(r["base_stat"])
+            if int(r["effort"] or 0):
+                ev_yield[r["pokemon_id"]][STAT_KEYS[r["stat_id"]]] = int(r["effort"])
+
+    # Abilities
+    ability_names = english_names("ability_names", "ability_id")
+    ability_effects = {r["ability_id"]: r["short_effect"]
+                       for r in read("ability_prose") if r["local_language_id"] == ENGLISH}
+    ability_slug = {r["id"]: r["identifier"] for r in read("abilities") if r["id"] in ability_names}
+    abilities = {slug: {"name": ability_names[aid], "effect": clean_prose(ability_effects.get(aid, ""))}
+                 for aid, slug in ability_slug.items()}
+    pokemon_abilities = defaultdict(list)
+    for r in sorted(read("pokemon_abilities"), key=lambda r: int(r["slot"])):
+        if r["pokemon_id"] in loaded_ids and r["ability_id"] in ability_slug:
+            pokemon_abilities[r["pokemon_id"]].append(
+                {"ability": ability_slug[r["ability_id"]], "hidden": r["is_hidden"] == "1"})
+
+    # Breeding and training
+    egg_group_names = english_names("egg_group_prose", "egg_group_id")
+    egg_groups = defaultdict(list)
+    for r in read("pokemon_egg_groups"):
+        egg_groups[r["species_id"]].append(egg_group_names.get(r["egg_group_id"], ""))
+    growth_rates = english_names("growth_rate_prose", "growth_rate_id")
 
     pokemon_types = defaultdict(list)
     for r in sorted(read("pokemon_types"), key=lambda r: int(r["slot"])):
-        if r["pokemon_id"] in pokemon_species_id:
+        if r["pokemon_id"] in loaded_ids:
             pokemon_types[r["pokemon_id"]].append(type_slug[r["type_id"]])
 
+    megas = build_megas(mega_rows, species_slug, items, read("items"), stats, pokemon_types,
+                        pokemon_abilities, ev_yield)
     evolutions = build_evolutions(species_slug, item_slug, items, move_slug, moves, type_slug)
     learnsets = build_learnsets(pokemon_species_id, species_slug, move_slug, group_slug, group_order, group_names)
 
@@ -238,7 +273,18 @@ def build():
             "evolution_method": evolutions.get(sid),
             "evolution_chain": int(r["evolution_chain_id"]) if r["evolution_chain_id"] else None,
             "flavor_text": flavor.get(sid, (0, ""))[1],
+            "abilities": pokemon_abilities[form["id"]],
+            "ev_yield": ev_yield[form["id"]],
+            "catch_rate": to_int(r["capture_rate"]),
+            "base_friendship": to_int(r["base_happiness"]),
+            "base_experience": to_int(form["base_experience"]),
+            "growth_rate": growth_rates.get(r["growth_rate_id"], ""),
+            "egg_groups": egg_groups[sid],
+            # Eighths female; -1 = genderless
+            "gender_rate": to_int(r["gender_rate"]),
+            "egg_cycles": to_int(r["hatch_counter"]),
             "learnset": learnsets.get(slug),
+            "megas": megas.get(slug, []),
         }
 
     generations = {
@@ -264,7 +310,66 @@ def build():
         "pokemon": pokemon,
         "moves": moves,
         "items": items,
+        "abilities": abilities,
     }
+
+
+def build_megas(mega_rows, species_slug, items, item_rows, stats, pokemon_types, pokemon_abilities, ev_yield):
+    """Per species slug: its Mega/Primal forms with stats, types and the item that triggers them."""
+    form_names = {}  # pokemon id -> English name like "Mega Charizard X"
+    form_pokemon = {r["id"]: r["pokemon_id"] for r in read("pokemon_forms")}
+    for r in read("pokemon_form_names"):
+        if r["local_language_id"] == ENGLISH and r["pokemon_name"] and r["pokemon_form_id"] in form_pokemon:
+            form_names[form_pokemon[r["pokemon_form_id"]]] = r["pokemon_name"]
+
+    stones = [r["identifier"] for r in item_rows if r["category_id"] == MEGA_STONE_CATEGORY]
+
+    def stone_for(form_slug, form_id, species):
+        """Older stones name their Mega in the effect text; newer ones only share the name stem."""
+        name = form_names.get(form_id)
+        for stone in stones:
+            effect = items.get(stone, {}).get("effect", "")
+            if name and effect.endswith(f"into {name}."):
+                return stone
+        variant = re.search(r"-mega(-[xyz])?$", form_slug).group(1) or ""
+        candidates = [s for s in stones if (re.search(r"-[xyz]$", s) or [""])[0] == variant
+                      and not items.get(s, {}).get("effect")]
+        stem = lambda s: re.sub(r"-[xyz]$", "", s)  # noqa: E731
+        best = max(candidates, key=lambda s: difflib.SequenceMatcher(None, stem(s), species).ratio(), default=None)
+        if best and difflib.SequenceMatcher(None, stem(best), species).ratio() >= 0.6:
+            return best
+        return None
+
+    megas = defaultdict(list)
+    for r in sorted(mega_rows, key=lambda r: int(r["id"])):
+        species = species_slug[r["species_id"]]
+        slug, pid = r["identifier"], r["id"]
+        if slug.endswith("-primal"):
+            kind, item = "primal", PRIMAL_ORBS.get(species)
+        else:
+            kind, item = "mega", None if species in STONELESS_MEGAS else stone_for(slug, pid, species)
+        megas[species].append({
+            "slug": slug,
+            "id": int(pid),
+            "name": form_names.get(pid, slug.replace("-", " ").title()),
+            "kind": kind,
+            "item": item,
+            "move": STONELESS_MEGAS.get(species) if kind == "mega" else None,
+            "types": pokemon_types[pid],
+            "stats": stats[pid],
+            "abilities": pokemon_abilities[pid],
+            "ev_yield": ev_yield[pid],
+            "height_m": int(r["height"]) / 10,
+            "weight_kg": int(r["weight"]) / 10,
+        })
+    for forms in megas.values():
+        # Same display name for gender variants (Mega Meowstic): add the variant from the slug
+        names = [f["name"] for f in forms]
+        for f in forms:
+            if names.count(f["name"]) > 1:
+                variant = f["slug"].split("-")[1]
+                f["name"] += f" ({variant.title()})"
+    return megas
 
 
 def build_evolutions(species_slug, item_slug, items, move_slug, moves, type_slug):
@@ -372,18 +477,21 @@ def build_learnsets(pokemon_species_id, species_slug, move_slug, group_slug, gro
             group = PREFERRED_LEARNSET_GROUP
         else:
             group = max(groups, key=lambda g: group_order[g])
-        level, machine = {}, set()
+        level, machine, egg = {}, set(), set()
         for r in groups[group]:
             move = move_slug[r["move_id"]]
             if r["pokemon_move_method_id"] == "1":  # level-up
                 lvl = int(r["level"] or 0)
                 level[move] = min(lvl, level.get(move, lvl))
+            elif r["pokemon_move_method_id"] == "2":  # egg move
+                egg.add(move)
             elif r["pokemon_move_method_id"] == "4":  # TM / machine
                 machine.add(move)
         learnsets[species_slug[pokemon_species_id[pokemon_id]]] = {
             "game": " / ".join(group_names[group]),
             "level_up": sorted(([lvl, m] for m, lvl in level.items()), key=lambda x: (x[0], x[1])),
             "machine": sorted(machine),
+            "egg": sorted(egg),
         }
     return learnsets
 

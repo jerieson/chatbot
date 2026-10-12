@@ -88,6 +88,12 @@ class Pokedex:
         self.type_chart: Dict[str, Dict[str, float]] = data["type_chart"]
         self.generations: Dict[int, dict] = {int(g): v for g, v in data["generations"].items()}
         self.pseudo_legendaries: List[str] = data["pseudo_legendaries"]
+        self.abilities: Dict[str, dict] = data.get("abilities", {})
+        self.by_id: Dict[int, str] = {p["id"]: slug for slug, p in self.pokemon.items()}
+        # Mega / Primal form slug -> (species slug, form data)
+        self.forms: Dict[str, Tuple[str, dict]] = {
+            form["slug"]: (slug, form) for slug, p in self.pokemon.items() for form in p.get("megas", [])
+        }
 
         self.starters = {s for g in self.generations.values() for s in g["starters"]}
         self.children: Dict[str, List[str]] = {}
@@ -121,6 +127,16 @@ class Pokedex:
 
         self._fuzzy_names = {normalize(p["name"]): slug for slug, p in self.pokemon.items()
                              if " " not in normalize(p["name"])}
+        # For search(): (normalized name, name without spaces, kind, slug)
+        self._search_names = [
+            (normalize(entry["name"]), normalize(entry["name"]).replace(" ", ""), kind, slug)
+            for kind, table in (("pokemon", self.pokemon), ("moves", self.moves), ("items", self.items))
+            for slug, entry in table.items()
+        ] + [(normalize(form["name"]), normalize(form["name"]).replace(" ", ""), "forms", slug)
+             for slug, (_, form) in self.forms.items()]
+        self._search_lookup: Dict[str, List[tuple]] = {}
+        for name, _, kind, slug in self._search_names:
+            self._search_lookup.setdefault(name, []).append((kind, slug))
         words_path = config.PROJECT_ROOT / "chatbot" / "data" / "english_words.txt"
         self._english_words = set()
         if words_path.exists():
@@ -193,6 +209,46 @@ class Pokedex:
             i = start + n
         out.extend(tokens[i:])
         return " ".join(out)
+
+    def search(self, query: str, limit: int = 8) -> List[Tuple[str, str]]:
+        """Pokemon, Mega forms, moves and items whose name matches `query`, best first, as (kind, slug).
+
+        Ranks exact > prefix > word prefix > substring, Pokemon before moves before items;
+        falls back to typo matching. "#94" or "94" finds a Pokemon by National Dex number.
+        """
+        number = re.fullmatch(r"#?\s*(\d{1,4})", query.strip())
+        if number:
+            slug = self.by_id.get(int(number.group(1)))
+            return [("pokemon", slug)] if slug else []
+
+        q = normalize(query)
+        if not q:
+            return []
+        squashed = q.replace(" ", "")
+        kind_order = {"pokemon": 0, "forms": 1, "moves": 2, "items": 3}
+        scored = []
+        for name, name_squashed, kind, slug in self._search_names:
+            if name == q or name_squashed == squashed:
+                rank = 0
+            elif name.startswith(q) or name_squashed.startswith(squashed):
+                rank = 1
+            elif any(word.startswith(q) for word in name.split()):
+                rank = 2
+            elif q in name:
+                rank = 3
+            else:
+                continue
+            # Ties: Pokemon in National Dex order (Charmander before Charcadet), others shortest first
+            order = self.pokemon[slug]["id"] if kind == "pokemon" else self.forms[slug][1]["id"] if kind == "forms" else len(name)
+            scored.append((rank, kind_order[kind], order, name, kind, slug))
+        results = [(kind, slug) for *_, kind, slug in sorted(scored)][:limit]
+
+        if len(results) < limit and len(squashed) >= 4:
+            for name in difflib.get_close_matches(q, self._search_lookup.keys(), n=limit, cutoff=0.75):
+                for match in self._search_lookup[name]:
+                    if match not in results:
+                        results.append(match)
+        return results[:limit]
 
     # ---- Type matchups -----------------------------------------------------
 

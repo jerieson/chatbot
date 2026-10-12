@@ -8,6 +8,7 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.chatbot_service import ChatService
+from backend.dex_api import create_router
 from backend.llm_fallback import LLMFallbackService
 from backend.models import ChatRequest, ChatResponse
 from chatbot import Chatbot
@@ -25,8 +26,8 @@ logger = logging.getLogger(__name__)
 
 
 # Initialize services
+pokedex = Pokedex()  # shared by the chatbot and the Pokedex browser
 try:
-    pokedex = Pokedex()
     embedder = Embedder()  # shared by the intent classifier and RAG search
     chat_service = ChatService(
         Chatbot(pokedex=pokedex, embedder=embedder),
@@ -53,6 +54,8 @@ app = FastAPI(
     version="2.0.0",
     lifespan=lifespan,
 )
+
+app.include_router(create_router(pokedex))
 
 app.add_middleware(
     CORSMiddleware,

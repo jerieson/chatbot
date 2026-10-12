@@ -3,6 +3,11 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Retro pixel font for the Pokedex logo and headings (loaded in index.html) */
+@theme {
+  --font-pixel: "Press Start 2P", ui-monospace, monospace;
+}
+
 /* Gengar palette: ghostly purples from shadow to highlight, plus the red eyes */
 @theme {
   --color-gengar-50: #f5f1fc;

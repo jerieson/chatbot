@@ -3,6 +3,22 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Gengar palette: ghostly purples from shadow to highlight, plus the red eyes */
+@theme {
+  --color-gengar-50: #f5f1fc;
+  --color-gengar-100: #ebe3f8;
+  --color-gengar-200: #d6c8f0;
+  --color-gengar-300: #b9a2e2;
+  --color-gengar-400: #9a7ed0;
+  --color-gengar-500: #7f62b8;
+  --color-gengar-600: #6a4f9e;
+  --color-gengar-700: #533c80;
+  --color-gengar-800: #36265a;
+  --color-gengar-900: #221838;
+  --color-gengar-950: #140e22;
+  --color-gengar-eye: #ff3d5a;
+}
+
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -49,7 +65,7 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
+  --primary: #6a4f9e;
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
@@ -60,7 +76,7 @@
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --ring: #9a7ed0;
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -117,4 +133,35 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+/* Gengar icon flames (components/GengarIcon.tsx): layers drift around the face while
+   each tongue flickers from its base */
+@keyframes flame-flicker {
+  0%, 100% { transform: scale(1, 1); }
+  35% { transform: scale(0.88, 1.22); }
+  70% { transform: scale(1.06, 0.86); }
+}
+@keyframes flame-spin {
+  to { transform: rotate(360deg); }
+}
+.flames {
+  filter: drop-shadow(0 0 3px var(--color-gengar-500));
+}
+.flame-spin,
+.flame-spin-reverse {
+  transform-box: view-box;
+  transform-origin: 50px 50px;
+  animation: flame-spin 16s linear infinite;
+}
+.flame-spin-reverse {
+  animation-duration: 11s;
+  animation-direction: reverse;
+}
+.flame-tongue {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: flame-flicker 1.2s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .flame-spin, .flame-spin-reverse, .flame-tongue { animation: none; }
 }

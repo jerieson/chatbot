@@ -1,7 +1,7 @@
 import axios, { AxiosError } from "axios";
 import { ChatRequest, ChatResponse, HealthResponse } from "@/types/chat";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8002";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 const api = axios.create({
   baseURL: API_URL,
@@ -27,7 +27,7 @@ export const chatApi = {
     try {
       const response = await api.get<HealthResponse>("/health");
       return response.data;
-    } catch (error) {
+    } catch {
       throw new Error("Backend server is offline");
     }
   },
@@ -38,7 +38,7 @@ export const chatApi = {
         params: { limit },
       });
       return response.data;
-    } catch (error) {
+    } catch {
       throw new Error("Failed to fetch history");
     }
   },
@@ -47,7 +47,7 @@ export const chatApi = {
     try {
       const response = await api.get("/stats");
       return response.data;
-    } catch (error) {
+    } catch {
       throw new Error("Failed to fetch stats");
     }
   },

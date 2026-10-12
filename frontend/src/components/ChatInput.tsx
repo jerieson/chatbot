@@ -31,15 +31,18 @@ export const ChatInput = ({ onSend, disabled = false }: ChatInputProps) => {
         value={input}
         onChange={(e) => setInput(e.target.value)}
         onKeyDown={handleKeyPress}
-        placeholder="Type your message..."
-        className="resize-none min-h-[50px] sm:min-h-[60px] max-h-[100px] sm:max-h-[120px] text-sm"
+        placeholder="Ask about any Pokémon..."
+        autoFocus
+        rows={1}
+        className="resize-none min-h-[44px] max-h-[120px] text-sm border-gengar-200"
         disabled={disabled}
       />
       <Button
         onClick={handleSend}
         disabled={!input.trim() || disabled}
         size="icon"
-        className="h-[50px] w-[50px] sm:h-[60px] sm:w-[60px] shrink-0 bg-[#13294b]"
+        className="h-11 w-11 shrink-0 self-end bg-gengar-600 hover:bg-gengar-700"
+        aria-label="Send message"
       >
         {disabled ? (
           <Loader2 className="h-4 w-4 animate-spin" />

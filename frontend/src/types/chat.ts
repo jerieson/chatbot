@@ -9,6 +9,7 @@ export interface Message {
 export interface ChatRequest {
   message: string;
   session_id?: string | null;
+  use_fallback?: boolean;
 }
 
 export interface ChatResponse {
@@ -17,10 +18,14 @@ export interface ChatResponse {
   confidence: number;
   timestamp: string;
   session_id: string;
+  source: "pokedex" | "knowledge" | "llm" | "database" | "default" | null;
+  used_fallback: boolean;
+  fallback_reason: string | null;
 }
 
 export interface HealthResponse {
   status: string;
   chatbot_ready: boolean;
+  llm_fallback_ready: boolean;
   timestamp: string;
 }

@@ -1,21 +1,42 @@
 # backend/main.py - FastAPI backend
 
-import sys
-import os
+import logging
 from contextlib import asynccontextmanager
 from datetime import datetime
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from typing import Optional
 
-from shared.database import Database
+from backend.chatbot_service import ChatService
+from backend.llm_fallback import LLMFallbackService
+from backend.models import ChatRequest, ChatResponse
 from chatbot import Chatbot
+from chatbot.embedder import Embedder
+from chatbot.pokedex import Pokedex
+from chatbot.retriever import Retriever
+from shared import config
+from shared.database import Database, get_conversation_history, get_stats
 
-# Add project root to path
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, PROJECT_ROOT)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger(__name__)
+
+
+# Initialize services
+try:
+    pokedex = Pokedex()
+    embedder = Embedder()  # shared by the intent classifier and RAG search
+    chat_service = ChatService(
+        Chatbot(pokedex=pokedex, embedder=embedder),
+        LLMFallbackService(),
+        pokedex,
+        Retriever(embedder, pokedex),
+    )
+except Exception:
+    logger.exception("Failed to initialize chatbot")
+    chat_service = None
 
 
 # Database lifecycle
@@ -35,36 +56,11 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=config.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-# Initialize chatbot
-try:
-    chatbot = Chatbot()
-except Exception as e:
-    print(f"Failed to initialize chatbot: {e}")
-    chatbot = None
-
-
-# Models
-class ChatRequest(BaseModel):
-    message: str
-    session_id: Optional[str] = None
-    use_fallback: Optional[bool] = True
-
-
-class ChatResponse(BaseModel):
-    message: str
-    intent: str
-    confidence: float
-    timestamp: str
-    session_id: str
-    used_fallback: bool = False
-    fallback_reason: Optional[str] = None
 
 
 # Routes
@@ -81,43 +77,41 @@ async def root():
 async def health_check():
     return {
         "status": "healthy",
-        "chatbot_ready": chatbot is not None,
+        "chatbot_ready": chat_service is not None,
+        "llm_fallback_ready": chat_service is not None and chat_service.llm_fallback.enabled,
         "timestamp": datetime.now().isoformat(),
     }
 
 
 @app.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
-    if chatbot is None:
+    if chat_service is None:
         raise HTTPException(status_code=503, detail="Chatbot not initialized")
 
-    if not request.message.strip():
+    message = request.message.strip()
+    if not message:
         raise HTTPException(status_code=400, detail="Message cannot be empty")
 
     try:
-        result = await chatbot.get_response(request.message)
-        return ChatResponse(
-            message=result["message"],
-            intent=result["intent"],
-            confidence=result["confidence"],
-            timestamp=datetime.now().isoformat(),
-            session_id=result["session_id"],
-            used_fallback=result.get("used_fallback", False),
-            fallback_reason=result.get("fallback_reason"),
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        result = await chat_service.get_response(message, request.session_id, request.use_fallback)
+    except Exception:
+        logger.exception("Error processing chat message")
+        raise HTTPException(status_code=500, detail="Internal error while processing the message")
+
+    return ChatResponse(timestamp=datetime.now().isoformat(), **result)
 
 
 @app.get("/history/{session_id}")
-async def get_history(session_id: str, limit: int = 10):
-    from shared.database import get_conversation_history
+async def history(session_id: str, limit: int = Query(10, ge=1, le=100)):
+    return {"history": await get_conversation_history(session_id, limit)}
 
-    history = await get_conversation_history(session_id, limit)
-    return {"history": history}
+
+@app.get("/stats")
+async def stats():
+    return await get_stats()
 
 
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("main:app", host="0.0.0.0", port=8002, reload=True)
+    uvicorn.run("backend.main:app", host="127.0.0.1", port=8000, reload=True)

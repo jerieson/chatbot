@@ -15,8 +15,8 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+/lib/
+/lib64/
 parts/
 sdist/
 var/
@@ -27,6 +27,7 @@ wheels/
 
 # Virtual Environment
 venv/
+.venv/
 env/
 ENV/
 env.bak/
@@ -79,3 +80,8 @@ site/
 # Data (optional - be careful with large datasets)
 # data/raw/*
 # !data/raw/.gitkeep
+
+# Generated data (rebuild with scripts/import_pokeapi.py and scripts/build_rag_index.py)
+data/pokeapi_cache/
+data/rag_index.npy
+data/rag_index.json

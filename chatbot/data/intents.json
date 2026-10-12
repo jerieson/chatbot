@@ -1,393 +1,452 @@
 {
   "intents": [
     {
-      "tag": "pokemon_info",
+      "tag": "greeting",
+      "description": "User says hello",
       "patterns": [
-        "Tell me about Pikachu",
-        "What is Charizard?",
-        "Who is Bulbasaur?",
-        "Give me info on Mewtwo",
-        "What is Squirtle?",
-        "Tell me about Blastoise",
-        "What is Gengar?",
-        "Who is Arcanine?",
-        "Tell me about Dragonite",
-        "What is Snorlax?"
+        "hi", "hello", "hey", "hey there", "hello there", "hi there", "howdy", "greetings",
+        "good morning", "good afternoon", "good day", "hiya", "sup", "what's up", "yo",
+        "hello bot", "hi EY-AY", "hey EY-AY", "hello, how are you?", "hi, how's it going?",
+        "hey, are you there?", "is anyone there?", "hi friend", "hello trainer", "morning!",
+        "hey hey", "heya", "hello again", "hi again", "hey, I need some help",
+        "hello, can I ask something?", "hi! quick question"
       ],
       "responses": [
-        "[Pokemon] is a [type] type Pokemon from Generation 1.",
-        "[Pokemon] is a Gen 1 Pokemon that can be found in the Kanto region.",
-        "[Pokemon] is a [type] type and is known for its [characteristic]."
+        "Hello, Trainer! Ask me about any Pokémon, type matchup, move, item or evolution.",
+        "Hi there! What would you like to know about Pokémon today?"
+      ]
+    },
+    {
+      "tag": "goodbye",
+      "description": "User ends the conversation",
+      "patterns": [
+        "bye", "goodbye", "see you", "see you later", "see ya", "later", "catch you later",
+        "good night", "bye for now", "I have to go", "I'm leaving", "I'm off", "that's all",
+        "that is all for now", "farewell", "take care", "until next time", "peace out",
+        "I'm done", "we're done here", "ok bye", "alright, bye", "thanks, bye", "cya",
+        "talk later", "signing off", "I'll come back later", "have a nice day"
+      ],
+      "responses": [
+        "Goodbye, Trainer! Good luck on your journey.",
+        "See you later! Come back any time you have a Pokémon question."
+      ]
+    },
+    {
+      "tag": "thanks",
+      "description": "User says thank you",
+      "patterns": [
+        "thanks", "thank you", "thx", "ty", "many thanks", "thanks a bunch", "thank you very much",
+        "much appreciated", "I appreciate it", "that was helpful", "that helps a lot", "great, thanks",
+        "perfect, thank you", "nice, thanks", "cool thanks", "thanks for the help", "thanks for the info",
+        "you're the best", "good bot", "great answer", "that's exactly what I needed", "awesome",
+        "nice one", "helpful, thanks", "thanks buddy", "cheers mate"
+      ],
+      "responses": [
+        "You're welcome! Anything else you'd like to know?",
+        "Happy to help! Ask me anything else about Pokémon."
+      ]
+    },
+    {
+      "tag": "bot_help",
+      "description": "User asks what the bot is or can do",
+      "patterns": [
+        "what can you do?", "help", "I need help", "what are you?", "who are you?", "what is EY-AY?",
+        "what can I ask you?", "what do you know?", "what questions can you answer?", "how does this work?",
+        "how do I use you?", "are you a bot?", "are you human?", "what are your features?",
+        "what topics do you cover?", "tell me about yourself", "what's your name?", "who built you?",
+        "can you help me?", "show me what you can do", "give me some example questions",
+        "what kind of things do you know", "list your commands", "how can you help me with pokemon"
+      ],
+      "responses": [
+        "I'm EY-AY, a Pokémon assistant. Try: \"What type is Garchomp?\", \"What is Gyarados weak to?\", \"How does Eevee evolve?\", \"Can Pikachu learn Surf?\", \"Compare Lucario and Blaziken\" or \"What are the Hoenn starters?\"."
+      ]
+    },
+    {
+      "tag": "out_of_scope",
+      "description": "Questions that are not about Pokémon",
+      "patterns": [
+        "what's the weather today?", "tell me a joke", "who is the president?", "what time is it?",
+        "how do I bake a cake?", "what is the meaning of life?", "can you write my essay?",
+        "what's 2 plus 2?", "solve this equation for me", "who won the football game?",
+        "what is the best phone to buy?", "how do I fix my car?", "translate this to Spanish",
+        "what's the stock price of Apple?", "book me a flight", "play some music",
+        "what should I eat for dinner?", "how tall is Mount Everest?", "who wrote Hamlet?",
+        "explain quantum physics", "how do I learn Python?", "what is the population of China?",
+        "tell me about the Roman Empire", "recommend a good book", "what's your favorite color?",
+        "do you like pizza?", "how to lose weight", "write me a poem about love",
+        "what is bitcoin?", "how do airplanes fly?", "who is Taylor Swift?", "what's on TV tonight?",
+        "asdfghjkl", "blah blah", "random text here"
+      ],
+      "responses": [
+        "I only know about Pokémon, so I can't help with that. Ask me about a Pokémon, type, move or item!",
+        "That's outside my Pokédex! Try asking about Pokémon types, evolutions, moves or items."
+      ]
+    },
+    {
+      "tag": "pokemon_info",
+      "description": "General information about a Pokémon",
+      "patterns": [
+        "Tell me about Pikachu", "What is Charizard?", "Who is Bulbasaur?", "Give me info on Eevee",
+        "What do you know about Gengar?", "Information about Snorlax", "Describe Lucario",
+        "Pokédex entry for Mimikyu", "Tell me everything about Greninja", "Who is Gardevoir?",
+        "What is a Togepi?", "Give me details on Umbreon", "What kind of Pokémon is Psyduck?",
+        "Can you describe Blaziken?", "Info on Ditto", "Tell me about the Pokémon Arcanine",
+        "What's Sylveon like?", "I want to know about Metagross", "Show me Dragapult's stats",
+        "What are Garchomp's base stats?", "How strong is Snorlax?", "What does Jigglypuff look like?",
+        "Profile of Machamp", "Pikachu", "Charizard info", "Who's Mewtwo?",
+        "Tell me something about Rayquaza", "Is Magikarp useful?", "How big is Wailord?",
+        "How heavy is Snorlax?", "What generation is Lucario from?", "Overview of Gyarados please",
+        "Explain the Pokémon Cubone", "What is Wooper?", "Details about Tinkaton"
+      ],
+      "responses": [
+        "Which Pokémon would you like to know about? Try: \"Tell me about Pikachu\"."
       ]
     },
     {
       "tag": "pokemon_type",
+      "description": "The type(s) of a Pokémon",
       "patterns": [
-        "What type is Pikachu?",
-        "What type is Charizard?",
-        "What type is Squirtle?",
-        "What is Bulbasaur's type?",
-        "What type is Gengar?",
-        "What type is Dragonite?",
-        "Tell me the type of Mewtwo",
-        "What are Vulpix's types?",
-        "What type is Arcanine?",
-        "What is the type of Snorlax?"
+        "What type is Pikachu?", "What type is Charizard?", "What is Bulbasaur's type?",
+        "What are Vulpix's types?", "Tell me the type of Mewtwo", "What type of Pokémon is Gengar?",
+        "Is Dragonite a dragon type?", "Is Gyarados part flying?", "Which type is Lucario?",
+        "What element is Squirtle?", "What typing does Garchomp have?", "Garchomp typing",
+        "Typing of Corviknight", "What are the types of Toxapex?", "Is Clefairy a fairy type?",
+        "Is Mimikyu ghost type?", "What type is Eevee?", "Rotom type", "What's the type of Snorlax?",
+        "Is Steelix steel or rock?", "Is Azumarill water and fairy?", "Which types does Scizor have?",
+        "What kind of type is Marill?", "Does Tyranitar have two types?", "Is Magnezone electric?",
+        "What is Dragapult's typing?", "Type of Annihilape", "Is Sylveon fairy?",
+        "Is Gardevoir psychic type?", "What dual type is Ferrothorn?", "Tell me Lapras's type"
       ],
       "responses": [
-        "[Pokemon] is a [type] type.",
-        "[Pokemon] is a [type1]/[type2] dual type Pokemon.",
-        "[Pokemon] belongs to the [type] type."
+        "Which Pokémon's type do you want to know? Try: \"What type is Gengar?\"."
       ]
     },
     {
       "tag": "type_weakness",
+      "description": "What a type or Pokémon is weak to",
       "patterns": [
-        "What is Fire weak against?",
-        "What is Water weak against?",
-        "What is Grass weak against?",
-        "What is Electric weak against?",
-        "What is Psychic weak against?",
-        "What is Dragon weak against?",
-        "What is Ghost weak against?",
-        "What is Ice weak against?",
-        "What is Bug weak against?",
-        "What is Fighting weak against?"
+        "What is Fire weak against?", "What is Water weak to?", "What are Grass type weaknesses?",
+        "What is Charizard weak to?", "What beats Dragon types?", "What is super effective against Ghost?",
+        "What's good against Gyarados?", "Weaknesses of Steel type", "What counters Psychic types?",
+        "What type beats Rock?", "What is strong against Fairy?", "Garchomp weaknesses",
+        "What hits Dragonite super effectively?", "How do I beat a Fighting type?",
+        "What should I use against Water Pokémon?", "Which types are strong against Ice?",
+        "What does Electric lose to?", "What is Tyranitar weak to?", "What takes double damage against Bug?",
+        "What is 4x effective against Charizard?", "Is Grass weak to Fire?", "What type beats Normal?",
+        "What are Lucario's weaknesses?", "What is Dark type weak against?", "What does Flying lose to?",
+        "Best type to use against Snorlax", "What is super effective on Ground types?",
+        "What moves work well against Gengar?", "Poison weaknesses", "What is Fire strong against?",
+        "What is Water super effective against?", "What does Grass beat?", "What types does Ice hit hard?"
       ],
       "responses": [
-        "[Type] type is weak against: [list of types]",
-        "The [type] type has weaknesses to: [types]",
-        "[Type] takes super effective damage from: [types]"
+        "Which type or Pokémon? Try: \"What is Fire weak against?\" or \"What is Charizard weak to?\"."
       ]
     },
     {
       "tag": "type_resistance",
+      "description": "What a type or Pokémon resists",
       "patterns": [
-        "What does Fire resist?",
-        "What does Water resist?",
-        "What does Grass resist?",
-        "What does Electric resist?",
-        "What does Psychic resist?",
-        "What does Dragon resist?",
-        "What does Ghost resist?",
-        "What does Ice resist?",
-        "What does Bug resist?",
-        "What does Fighting resist?"
+        "What does Fire resist?", "What does Water resist?", "What are Steel type resistances?",
+        "What does Charizard resist?", "What is not very effective against Dragon?",
+        "Which types resist Electric?", "What types take half damage from Grass?",
+        "What resists Fighting moves?", "What is Fairy resistant to?", "Resistances of Ghost type",
+        "What types does Ferrothorn resist?", "What can Steel types tank?", "Which types are weak against Water?",
+        "What deals reduced damage to Rock types?", "What is resisted by Bug?", "What does Psychic resist?",
+        "What moves are not very effective on Skarmory?", "What does Dragon take less damage from?",
+        "What can Blissey resist?", "Does Water resist Fire?", "Does Steel resist Dragon?",
+        "What types are resistant to Ice?", "What is Grass resistant to?", "Toxapex resistances",
+        "What attacks does Corviknight resist?", "What does Poison resist?", "Which types resist Normal moves?",
+        "What is ineffective against Steel?", "What types shrug off Fire attacks?"
       ],
       "responses": [
-        "[Type] type resists: [list of types]",
-        "The [type] type is resistant to: [types]",
-        "[Type] takes not very effective damage from: [types]"
+        "Which type or Pokémon? Try: \"What does Steel resist?\" or \"What does Gyarados resist?\"."
       ]
     },
     {
       "tag": "type_immunity",
+      "description": "Type immunities",
       "patterns": [
-        "What is Ghost immune to?",
-        "What is Normal immune to?",
-        "What types are immune to damage?",
-        "Which type cannot be hurt by something?",
-        "What does Normal not affect?",
-        "What is immune to Fighting?",
-        "What is immune to Psychic?",
-        "Which types have immunity?"
+        "What is Ghost immune to?", "What is Normal immune to?", "What types are immune to damage?",
+        "Which types have immunities?", "What is immune to Fighting?", "What is immune to Psychic?",
+        "What is immune to Electric moves?", "Can Ground types be hit by Electric?",
+        "Are Ghost types immune to Normal?", "What can't Dragon moves hit?", "Is Fairy immune to Dragon?",
+        "What does Ground not affect?", "Which type is immune to Poison?", "Does Earthquake hit Flying types?",
+        "Can Normal moves hit Ghost?", "What types are completely immune to Ground?", "Is Dark immune to Psychic?",
+        "List all type immunities", "Which types take no damage from Ghost?", "What can't be poisoned?",
+        "What has no effect on Steel types?", "What moves have no effect on Gengar?",
+        "Is Steel immune to Poison?", "What is Flying immune to?", "Which Pokémon types are immune to Ground moves?",
+        "What does Electric have no effect on?", "What doesn't affect Fairy types?"
       ],
       "responses": [
-        "[Type] type is immune to: [list]",
-        "The [type] type cannot be affected by: [list]",
-        "[Type] is completely immune to [list]"
+        "Which type? Try: \"What is Ghost immune to?\" or \"What is immune to Electric?\"."
       ]
     },
     {
       "tag": "evolution",
+      "description": "How a Pokémon evolves or its evolution line",
       "patterns": [
-        "How does Pikachu evolve?",
-        "What does Charmander evolve into?",
-        "What does Bulbasaur evolve into?",
-        "What does Squirtle evolve into?",
-        "How does Eevee evolve?",
-        "What evolves into Charizard?",
-        "What evolves into Venusaur?",
-        "What evolves into Blastoise?",
-        "How does Gengar evolve?",
-        "What does Dratini evolve into?"
+        "How does Pikachu evolve?", "What does Charmander evolve into?", "What does Bulbasaur evolve into?",
+        "How does Eevee evolve?", "What level does Squirtle evolve?", "When does Dratini evolve?",
+        "Evolution line of Gastly", "What is Charmander's evolution?", "Does Pikachu evolve?",
+        "What are the evolutions of Eevee?", "Show me the evolution chain of Larvitar",
+        "What is the final evolution of Ralts?", "At what level does Magikarp evolve?",
+        "How many evolutions does Abra have?", "Evolution family of Bagon", "Tell me about Machop's evolution",
+        "What does Riolu turn into?", "What's next after Charmeleon?", "Does Snorlax evolve?",
+        "What does Gible evolve into and when?", "Full evolution line of Froakie", "Is Pidgeot fully evolved?",
+        "What is the last form of Beldum?", "When does Grookey evolve?", "How do I evolve Riolu?",
+        "How do you evolve Feebas?", "Does Lapras have an evolution?", "Mudkip evolution levels",
+        "What's Dreepy's evolution?", "How do I get Lucario?", "How does Haunter evolve?"
       ],
       "responses": [
-        "[Pokemon] evolves into [Evolution] starting at level [level].",
-        "[Pokemon] evolves into [Evolution] when leveled up.",
-        "[Pokemon] evolves into [Evolution] at level [level]."
+        "Which Pokémon? Try: \"How does Eevee evolve?\"."
       ]
     },
     {
       "tag": "evolution_item",
+      "description": "Items and stones used for evolution",
       "patterns": [
-        "How to evolve Eevee?",
-        "What stones evolve Eevee?",
-        "How does Gloom evolve?",
-        "What item evolves Poliwag?",
-        "How does Clobbopus evolve?",
-        "What evolves with Water Stone?",
-        "What evolves with Fire Stone?",
-        "What evolves with Thunder Stone?"
+        "What stones evolve Eevee?", "What item evolves Poliwhirl?", "What stone does Pikachu need?",
+        "What evolves with Water Stone?", "What evolves with Fire Stone?", "What evolves with Thunder Stone?",
+        "Which Pokémon evolve with a Moon Stone?", "What can I use a Leaf Stone on?",
+        "What does a Shiny Stone evolve?", "Which stone evolves Growlithe?", "What item does Onix need to evolve?",
+        "What do I use on Gloom to evolve it?", "Which evolution stone for Vulpix?", "Does Scyther need an item to evolve?",
+        "What do I need to hold to evolve Seadra?", "Which Pokémon evolve with a Dusk Stone?",
+        "What item evolves Clamperl?", "Uses for an Ice Stone", "Which Pokémon need a King's Rock?",
+        "What stone does Eevee need for Vaporeon?", "Who uses a Sun Stone?", "What item do I need for Magnezone?",
+        "What evolution items are there?", "What stone turns Pikachu into Raichu?", "Do I need a stone for Exeggcute?",
+        "Which items trigger evolution for Porygon?", "What does the Metal Coat evolve?", "What does Dragon Scale do for evolution?"
       ],
       "responses": [
-        "[Pokemon] evolves using [Item].",
-        "[Pokemon] evolves when exposed to [Item].",
-        "[Pokemon] can evolve with [Item]."
+        "Which Pokémon or item? Try: \"How do I evolve Eevee?\" or \"What evolves with a Water Stone?\"."
       ]
     },
     {
       "tag": "pre_evolution",
+      "description": "What a Pokémon evolves from",
       "patterns": [
-        "What evolves into Pikachu?",
-        "What is before Charizard?",
-        "What is before Blastoise?",
-        "What does Charmander evolve from?",
-        "What does Bulbasaur evolve from?",
-        "What does Squirtle evolve from?",
-        "What is the pre-evolution of Gengar?",
-        "What does Dragonite evolve from?",
-        "What evolves into Dragonair?",
-        "What is before Mewtwo?"
+        "What evolves into Pikachu?", "What is before Charizard?", "What does Charmander evolve from?",
+        "What is the pre-evolution of Gengar?", "What does Dragonite evolve from?", "What evolves into Dragonair?",
+        "What is before Mewtwo?", "What evolves into Charizard?", "What evolves into Venusaur?",
+        "What's the previous evolution of Lucario?", "Which Pokémon becomes Gyarados?",
+        "What did Raichu evolve from?", "Does Snorlax have a baby form?", "What is the first form of Garchomp?",
+        "What is the base form of Tyranitar?", "What Pokémon evolves into Togekiss?", "Who evolves into Blissey?",
+        "Pre-evolution of Electabuzz", "What is Marill's pre evolution?", "What comes before Metagross?",
+        "What was Ninetales before evolving?", "Which Pokémon turns into Umbreon?", "Unevolved form of Hydreigon",
+        "What is the baby form of Pikachu?", "Does Mewtwo evolve from anything?", "What does Kingambit evolve from?",
+        "What evolves into Annihilape?"
       ],
       "responses": [
-        "[Pokemon] evolves from [Pre-evolution].",
-        "[Pokemon] comes from [Pre-evolution].",
-        "[Pokemon] is the pre-evolution of [Evolution]."
+        "Which Pokémon? Try: \"What evolves into Pikachu?\"."
       ]
     },
     {
       "tag": "move_info",
+      "description": "Details about a move",
       "patterns": [
-        "Tell me about Thunderbolt",
-        "What is Fire Blast?",
-        "How powerful is Hydro Pump?",
-        "What is Thunder?",
-        "Tell me about Psychic move",
-        "What is Draco Meteor?",
-        "How good is Surf?",
-        "What is Body Slam?",
-        "Tell me about Scratch",
-        "What is Vine Whip?"
+        "Tell me about Thunderbolt", "What is Fire Blast?", "How powerful is Hydro Pump?", "What is Thunder?",
+        "Tell me about Psychic move", "What is Draco Meteor?", "How good is Surf?", "What is Body Slam?",
+        "What does Swords Dance do?", "How accurate is Focus Blast?", "What does Protect do?",
+        "Explain U-turn", "What type is Shadow Ball?", "How much PP does Flamethrower have?",
+        "What is the power of Earthquake?", "Is Close Combat physical or special?", "What does Stealth Rock do?",
+        "Info on the move Dragon Dance", "What does Toxic do?", "Explain Extreme Speed", "Is Ice Beam special?",
+        "What category is Brave Bird?", "What is Moonblast?", "Does Scald burn?", "What does Will-O-Wisp do?",
+        "Details of Volt Switch", "What is the effect of Calm Mind?", "What priority does Quick Attack have?",
+        "Base power of Outrage", "Is Hyper Beam good?", "Describe the move Rest"
       ],
       "responses": [
-        "[Move] is a [Type] type move with [Power] base power and [Accuracy]% accuracy.",
-        "[Move]: Type [Type], Power [Power], Accuracy [Accuracy]%, PP [PP].",
-        "[Move] is a [Category] move that deals [Power] damage."
+        "Which move? Try: \"Tell me about Thunderbolt\"."
       ]
     },
     {
       "tag": "move_type",
+      "description": "Moves of a given type",
       "patterns": [
-        "What are Fire type moves?",
-        "List Water type moves",
-        "Grass type moves",
-        "Electric type moves",
-        "Psychic moves",
-        "Dragon type moves",
-        "Ghost type moves",
-        "Ice type moves",
-        "Fighting type moves",
-        "Normal type moves"
+        "What are Fire type moves?", "List Water type moves", "Grass type moves", "Electric type moves",
+        "Psychic moves", "Dragon type moves", "Ghost type moves", "Ice type moves", "Fighting type moves",
+        "Normal type moves", "Strongest Fire moves", "What are the best Water attacks?", "Most powerful Dragon moves",
+        "Show me Steel type moves", "Give me some Fairy moves", "Which Dark moves are there?",
+        "What Ground moves exist?", "List Poison type attacks", "Top Bug type moves", "Strong Rock moves",
+        "Flying type attacks", "What are some good Ghost attacks?", "Name some Electric attacks",
+        "Powerful Psychic type moves", "What moves are Grass type?", "Highest power Ice moves", "Fighting attacks list"
       ],
       "responses": [
-        "Some [Type] type moves include: [list]",
-        "[Type] type moves: [list]",
-        "Notable [Type] moves: [list]"
+        "Which type of moves? Try: \"List Water type moves\"."
       ]
     },
     {
       "tag": "move_learn",
+      "description": "Moves a Pokémon can learn",
       "patterns": [
-        "What moves can Charizard learn?",
-        "What moves does Pikachu learn?",
-        "What moves can Blastoise learn?",
-        "What moves does Dragonite learn?",
-        "What moves does Gengar learn?",
-        "What moves can Mewtwo learn?",
-        "What moves does Snorlax learn?",
-        "What moves does Arcanine learn?"
+        "What moves can Charizard learn?", "What moves does Pikachu learn?", "What moves can Blastoise learn?",
+        "Can Pikachu learn Surf?", "Does Gengar learn Thunderbolt?", "Can Charizard learn Dragon Claw?",
+        "When does Bulbasaur learn Razor Leaf?", "What level does Charmander learn Flamethrower?",
+        "Learnset of Lucario", "Gyarados moveset", "Can Snorlax learn Earthquake?", "Which TMs can Garchomp use?",
+        "What moves does Eevee learn by level up?", "Does Dragonite get Extreme Speed?", "Can Mewtwo learn Aura Sphere?",
+        "What attacks can Gardevoir learn?", "List moves for Metagross", "Can Lapras learn Ice Beam?",
+        "Is Tyranitar able to learn Stone Edge?", "What does Squirtle learn at level 1?", "Who can learn Thunderbolt?",
+        "Which Pokémon learn Earthquake?", "Can Greninja use Water Shuriken?", "Does Togekiss learn Air Slash?",
+        "At what level does Pikachu learn Thunder?", "Moves Sylveon can learn", "What can Machamp learn?"
       ],
       "responses": [
-        "[Pokemon] can learn moves like: [list]",
-        "Notable moves for [Pokemon]: [list]",
-        "[Pokemon] learns [move1], [move2], and [move3]."
+        "Which Pokémon (and move)? Try: \"What moves does Pikachu learn?\" or \"Can Pikachu learn Surf?\"."
       ]
     },
     {
       "tag": "item_info",
+      "description": "What an item does",
       "patterns": [
-        "What does Pokéball do?",
-        "Tell me about Potion",
-        "What is Master Ball?",
-        "What does Ultra Ball do?",
-        "Tell me about Revive",
-        "What is Elixir?",
-        "What does Escape Rope do?",
-        "Tell me about Rare Candy",
-        "What is TM01?",
-        "What does Escape Rope do?"
+        "What does Pokéball do?", "Tell me about Potion", "What is Master Ball?", "What does Ultra Ball do?",
+        "Tell me about Revive", "What is Elixir?", "What does Escape Rope do?", "Tell me about Rare Candy",
+        "What is TM01?", "What does a Choice Band do?", "What is Leftovers?", "Effect of Life Orb",
+        "What does the Focus Sash do?", "Explain Eviolite", "What is an Everstone for?", "What does Full Restore heal?",
+        "How does a Quick Ball work?", "What is the Exp. Share?", "What does Lucky Egg do?", "Rocky Helmet effect",
+        "What is a Max Potion?", "What does Repel do?", "What does a Sitrus Berry do?", "Explain Assault Vest",
+        "What is the Choice Specs item?", "What's a Heavy-Duty Boots?", "What do Ability Capsules do?",
+        "How much does a Great Ball cost?", "What is a Dusk Ball good for?"
       ],
       "responses": [
-        "[Item]: [description]",
-        "[Item] - [function]",
-        "[Item] is used to [use]."
+        "Which item? Try: \"What does a Rare Candy do?\"."
       ]
     },
     {
       "tag": "item_location",
+      "description": "Where to find or buy an item",
       "patterns": [
-        "Where to find Pokéball?",
-        "Where to get Potion?",
-        "Where is Master Ball?",
-        "Where to find Rare Candy?",
-        "Where to get evolution stones?",
-        "Where to find Thunder Stone?",
-        "Where can I buy potions?",
-        "Where is Water Stone?",
-        "Where to get Fire Stone?",
-        "Where to find Moon Stone?"
+        "Where to find Pokéball?", "Where to get Potion?", "Where is Master Ball?", "Where to find Rare Candy?",
+        "Where to get evolution stones?", "Where to find Thunder Stone?", "Where can I buy potions?",
+        "Where is Water Stone?", "Where to get Fire Stone?", "Where to find Moon Stone?", "How do I get Leftovers?",
+        "Where can I get a Choice Scarf?", "How to obtain an Ability Patch?", "Where do I buy Ultra Balls?",
+        "Where can I find a Shiny Stone?", "Which store sells Revives?", "How can I get more Rare Candies?",
+        "Where is the Exp. Share in Scarlet?", "How do I farm Master Balls?", "Where are TMs found?",
+        "Where can I find Dragon Scale?", "How to get a King's Rock?", "Where do I get a Life Orb?",
+        "Where to buy evolution items?", "Location of the Ice Stone", "How to get a Metal Coat?"
       ],
       "responses": [
-        "[Item] can be found at [location].",
-        "You can get [Item] by [method].",
-        "[Item] is located in [location] or obtained by [method]."
+        "Item locations depend on the game. Most common items are sold at Poké Marts, and rarer ones are found in the overworld or given by characters. Which game are you playing?"
       ]
     },
     {
       "tag": "legendary",
+      "description": "Legendary and Mythical Pokémon",
       "patterns": [
-        "Tell me about Mewtwo",
-        "Who is Mew?",
-        "What is Articuno?",
-        "Tell me about Zapdos",
-        "What is Moltres?",
-        "Tell me about the legendary birds",
-        "Who is the strongest legendary?",
-        "What legendaries are in Gen 1?",
-        "Tell me about Mew",
-        "What is Mewtwo?"
+        "Is Mewtwo legendary?", "Is Mew a mythical Pokémon?", "Tell me about the legendary birds",
+        "Who is the strongest legendary?", "What legendaries are in Gen 1?", "List the legendary Pokémon",
+        "What are the mythical Pokémon?", "Which legendaries are in Johto?", "Is Lucario a legendary?",
+        "Is Rayquaza legendary?", "Legendaries of Sinnoh", "What are the Kanto legendaries?",
+        "Name all mythical Pokémon from Unova", "Is Arceus mythical?", "How many legendaries are there?",
+        "Which legendary is on the cover of Scarlet?", "What legendary Pokémon are from Galar?",
+        "Is Dragonite legendary?", "Which Pokémon are legendary in Paldea?", "Tell me about the legendary beasts",
+        "Who are the box legendaries?", "Is Zygarde legendary?", "Gen 3 legendaries", "List mythicals",
+        "Is Celebi a legendary or mythical?", "What legendaries come from Alola?", "Legendary Pokémon list for Kalos"
       ],
       "responses": [
-        "[Legendary] is a [type] type Legendary Pokemon from Gen 1. [description]",
-        "[Legendary] is one of the Legendary Pokemon in Generation 1.",
-        "[Legendary]: [type] type, described as [description]"
+        "Which Legendary or region? Try: \"Is Mewtwo legendary?\" or \"Legendaries in Johto\"."
       ]
     },
     {
       "tag": "pseudo_legendary",
+      "description": "Pseudo-legendary Pokémon",
       "patterns": [
-        "What is Dragonite?",
-        "Tell me about Dragonite",
-        "Is Dragonite a legendary?",
-        "What pseudo legendary in Gen 1?",
-        "Tell me about Dragonite evolution",
-        "What is Dratini?",
-        "Dragonite stats",
-        "Is Dragonite strong?"
+        "Is Dragonite a pseudo legendary?", "What pseudo legendary is in Gen 1?", "List the pseudo legendaries",
+        "What is a pseudo-legendary?", "Is Garchomp pseudo legendary?", "Is Tyranitar a pseudo?",
+        "Which pseudo legendary is from Hoenn?", "How many pseudo legendaries are there?", "Is Metagross pseudo legendary?",
+        "What are pseudo legendary Pokémon?", "Is Dratini in a pseudo legendary line?", "Is Hydreigon a pseudo-legendary?",
+        "Pseudo legendaries of Gen 9", "Is Gyarados a pseudo legendary?", "Which Pokémon count as pseudo legendary?",
+        "Gen 4 pseudo legendary", "Is Goodra a pseudo?", "What makes a Pokémon pseudo legendary?",
+        "Is Lucario pseudo legendary?", "Name the 600 base stat pseudo legendaries", "Is Dragapult a pseudo legendary?",
+        "What's the pseudo-legendary of Paldea?"
       ],
       "responses": [
-        "[Pokemon] is a Pseudo-Legendary Pokemon from Gen 1.",
-        "[Pokemon] evolves from [Pre-evolution] and becomes very powerful.",
-        "[Pokemon] is known for its high stats and is often considered pseudo-legendary."
+        "Try: \"Is Garchomp a pseudo-legendary?\" or \"List the pseudo-legendaries\"."
       ]
     },
     {
       "tag": "starter",
+      "description": "Starter Pokémon",
       "patterns": [
-        "Tell me about Bulbasaur",
-        "What is Charmander?",
-        "Tell me about Squirtle",
-        "Which starter is best?",
-        "What are the Kanto starters?",
-        "Tell me about the starter Pokemon",
-        "What is the grass starter?",
-        "What is the fire starter?",
-        "What is the water starter?",
-        "Compare the starters"
+        "What are the Kanto starters?", "Which starter is best?", "What is the grass starter?", "What is the fire starter?",
+        "What is the water starter?", "Tell me about the starter Pokémon", "Compare the starters",
+        "What are the starters in Johto?", "Hoenn starters", "Who are the Sinnoh starter Pokémon?",
+        "Which starters can I choose in Unova?", "Kalos starter Pokémon", "What are the Alola starters?",
+        "Galar starters", "Paldea starter Pokémon", "Is Charmander a starter?", "Which starter should I pick in Scarlet?",
+        "What starters are there in Gen 5?", "List all starter Pokémon", "Fire starters of every generation",
+        "Is Pikachu a starter?", "Which starter is easiest in Pokémon Red?", "What are the gen 7 starters?",
+        "What Pokémon do you start with in Sword and Shield?", "Which water starter is the strongest?",
+        "First partner Pokémon in Paldea", "Is Mudkip a starter?"
       ],
       "responses": [
-        "[Starter] is a [type] type starter Pokemon from the Kanto region.",
-        "The Kanto starters are: Bulbasaur (Grass/Poison), Charmander (Fire), Squirtle (Water).",
-        "[Starter] evolves into [Evolution1] then [Evolution2]."
+        "Which region? Try: \"What are the Hoenn starters?\"."
       ]
     },
     {
       "tag": "region",
+      "description": "Pokémon regions",
       "patterns": [
-        "What is the Kanto region?",
-        "Tell me about Kanto",
-        "What games are in Kanto?",
-        "How many Pokemon in Kanto?",
-        "What is the Kanto region like?",
-        "Kanto region cities",
-        "What is the Kanto league?",
-        "Tell me about the Kanto gym leaders"
+        "What is the Kanto region?", "Tell me about Kanto", "What games are in Kanto?", "How many Pokemon in Kanto?",
+        "What is the Kanto region like?", "Kanto region cities", "What is the Kanto league?",
+        "Tell me about the Kanto gym leaders", "What is Johto?", "Tell me about the Hoenn region",
+        "Which region is Sinnoh?", "What games take place in Unova?", "What region is Pokémon X set in?",
+        "Tell me about Alola", "What region is Sword and Shield?", "What is Paldea?", "List all Pokémon regions",
+        "How many regions are there?", "Which region came first?", "What region is Galar based on?",
+        "What Pokémon were introduced in Kalos?", "Which generation is Hoenn?", "Gym leaders in Johto",
+        "Tell me about the Sinnoh region", "What region is Gen 5?", "Which games are set in Paldea?",
+        "What is the Unova region?"
       ],
       "responses": [
-        "Kanto is the first region in the Pokemon series, featured in Red, Blue, Yellow, Gold, Silver, Crystal, and remakes.",
-        "Kanto region has 8 gym leaders and the Elite Four.",
-        "Kanto is home to 151 Pokemon, the original set."
+        "Which region? Try: \"Tell me about Sinnoh\"."
       ]
     },
     {
       "tag": "compare",
+      "description": "Compare two Pokémon",
       "patterns": [
-        "Compare Pikachu and Raichu",
-        "Which is better Charizard or Dragonite?",
-        "Pikachu vs Jolteon",
-        "Squirtle vs Psyduck",
-        "Bulbasaur vs Venusaur",
-        "Gengar vs Haunter",
-        "Snorlax vs Arcanine",
-        "Mewtwo vs Mew",
-        "Which is stronger Charizard or Blastoise?",
-        "Pikachu vs Electric type"
+        "Compare Pikachu and Raichu", "Which is better Charizard or Dragonite?", "Pikachu vs Jolteon",
+        "Squirtle vs Psyduck", "Bulbasaur vs Venusaur", "Gengar vs Haunter", "Snorlax vs Arcanine",
+        "Mewtwo vs Mew", "Which is stronger Charizard or Blastoise?", "Who would win, Lucario or Machamp?",
+        "Garchomp or Salamence?", "Compare Tyranitar with Metagross", "Is Gyarados better than Dragonite?",
+        "Who is faster, Greninja or Talonflame?", "Difference between Espeon and Umbreon",
+        "Blaziken versus Swampert", "Should I use Gardevoir or Alakazam?", "Rayquaza compared to Groudon",
+        "Lapras vs Vaporeon stats", "Which has more attack, Machamp or Conkeldurr?", "Compare stats of Scizor and Metagross",
+        "Who is bulkier, Snorlax or Blissey?", "Corviknight vs Skarmory", "Is Sylveon stronger than Gardevoir?",
+        "Dragapult or Hydreigon, which one?", "Compare Infernape and Blaziken"
       ],
       "responses": [
-        "[Pokemon1] vs [Pokemon2]: [Comparison]",
-        "Comparing [Pokemon1] and [Pokemon2], [difference]",
-        "[Pokemon1] has [stats] while [Pokemon2] has [stats]."
+        "Which two Pokémon? Try: \"Compare Charizard and Blastoise\"."
       ]
     },
     {
       "tag": "team_build",
+      "description": "Team building advice",
       "patterns": [
-        "How to build a team?",
-        "What is a good team composition?",
-        "Team building tips",
-        "How to make a balanced team?",
-        "What types should be on a team?",
-        "Need help building team",
-        "How many Pokemon in a team?",
-        "What is a good starter team?",
-        "How to counter types?",
-        "Team suggestions"
+        "How to build a team?", "What is a good team composition?", "Team building tips", "How to make a balanced team?",
+        "What types should be on a team?", "Need help building team", "How many Pokemon in a team?",
+        "What is a good starter team?", "How to counter types?", "Team suggestions", "Build me a team around Charizard",
+        "What Pokémon go well with Garchomp?", "Good teammates for Pikachu", "Best team for Pokémon Red",
+        "Suggest a team for Scarlet", "What is a good competitive team?", "How do I cover my team's weaknesses?",
+        "Recommend a rain team", "What should my team have?", "Help me build a balanced six",
+        "Which Pokémon should I add to my team?", "What's a good team to beat the Elite Four?",
+        "Team ideas for a Nuzlocke", "How to pick Pokémon for my team?", "Should my team have a tank?",
+        "Best partners for Dragonite", "What's a strong team for beginners?"
       ],
       "responses": [
-        "A balanced team should have Pokemon that cover each other's weaknesses.",
-        "Try to have at least one Pokemon that can handle each type matchup.",
-        "Include a mix of types and consider having a Physical and Special attacker."
+        "A balanced team covers each other's weaknesses: aim for varied types, a mix of physical and special attackers, and at least one bulky Pokémon that can switch in safely."
       ]
     },
     {
       "tag": "game_mechanics",
+      "description": "How game mechanics work",
       "patterns": [
-        "How to catch Pokemon?",
-        "How does catching work?",
-        "How to battle in Pokemon?",
-        "How does experience work?",
-        "How to evolve Pokemon?",
-        "What determines catch rate?",
-        "How to use items in battle?",
-        "What are Pokemon stats?",
-        "How do types affect damage?",
-        "What is STAB?"
+        "How to catch Pokemon?", "How does catching work?", "How to battle in Pokemon?", "How does experience work?",
+        "How to evolve Pokemon?", "What determines catch rate?", "How to use items in battle?", "What are Pokemon stats?",
+        "How do types affect damage?", "What is STAB?", "What are EVs?", "What are IVs?", "How do natures work?",
+        "What are abilities?", "How does breeding work?", "What is a critical hit?", "How does speed priority work?",
+        "What are status conditions?", "How does weather work in battle?", "What is Terastallizing?",
+        "How does friendship work?", "What is a shiny Pokémon?", "How do held items work?",
+        "What does accuracy and evasion mean?", "How is damage calculated?", "What is a physical vs special move?",
+        "How do I increase friendship?", "What are hidden abilities?", "How does Dynamax work?", "What are stat stages?"
       ],
       "responses": [
-        "To catch Pokemon, weaken it and use a Pokeball. The catch rate depends on Pokemon and ball type.",
-        "In battle, use moves to deal damage. Types affect damage effectiveness.",
-        "Pokemon evolve by leveling up, using items, or trading."
+        "Pokémon battles revolve around types, stats and moves: moves matching the user's type get a 1.5x bonus (STAB), super effective hits deal 2x damage, and Speed decides who attacks first."
       ]
     }
   ]

@@ -1,18 +1,12 @@
 # shared/database.py - Async MySQL using aiomysql
 
-import os
-import asyncio
-from pathlib import Path
-from dotenv import load_dotenv
-
-# Load .env from project root
-PROJECT_ROOT = Path(__file__).parent.parent
-load_dotenv(PROJECT_ROOT / ".env")
+import logging
+from contextlib import asynccontextmanager
+from typing import Optional, List, Dict
 
 import aiomysql
-import logging
-from typing import Optional, List, Dict
-from contextlib import asynccontextmanager
+
+from shared import config
 
 logger = logging.getLogger(__name__)
 
@@ -24,14 +18,12 @@ class Database:
     async def init(cls):
         """Initialize connection pool"""
         if cls._pool is None:
-            loop = asyncio.get_event_loop()
             cls._pool = await aiomysql.create_pool(
-                loop=loop,
-                host=os.getenv("DB_HOST", "localhost"),
-                port=int(os.getenv("DB_PORT", 3306)),
-                user=os.getenv("DB_USER", "chatbot_user"),
-                password=os.getenv("DB_PASSWORD", ""),
-                db=os.getenv("DB_NAME", "chatbot_db"),
+                host=config.DB_HOST,
+                port=config.DB_PORT,
+                user=config.DB_USER,
+                password=config.DB_PASSWORD,
+                db=config.DB_NAME,
                 charset="utf8mb4",
                 autocommit=True,
                 minsize=1,
@@ -89,24 +81,26 @@ async def log_conversation(
     confidence: float,
     bot_response: str,
     response_time_ms: int = 0,
+    used_fallback: bool = False,
 ) -> int:
     """Log a conversation to the database"""
     query = """
-        INSERT INTO conversations 
-        (session_id, user_message, predicted_intent, confidence, bot_response, response_time_ms)
-        VALUES (%s, %s, %s, %s, %s, %s)
+        INSERT INTO conversations
+        (session_id, user_message, predicted_intent, confidence, bot_response,
+         response_time_ms, used_fallback)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
     """
     cursor = await Database.execute(query, (
-        session_id, user_message, predicted_intent, confidence, bot_response, response_time_ms
+        session_id, user_message, predicted_intent, confidence, bot_response,
+        response_time_ms, used_fallback,
     ))
-    await cursor.close()
     return cursor.lastrowid
 
 
 async def get_random_response(intent_tag: str) -> Optional[str]:
     """Get a random response for an intent"""
     query = """
-        SELECT r.text 
+        SELECT r.text
         FROM responses r
         JOIN intents i ON r.intent_id = i.id
         WHERE i.tag = %s
@@ -118,11 +112,42 @@ async def get_random_response(intent_tag: str) -> Optional[str]:
 
 
 async def get_conversation_history(session_id: str, limit: int = 10) -> List[Dict]:
-    """Get conversation history for a session"""
+    """Get conversation history for a session, newest first"""
     query = """
         SELECT * FROM conversations
         WHERE session_id = %s
-        ORDER BY created_at DESC
+        ORDER BY created_at DESC, id DESC
         LIMIT %s
     """
     return await Database.fetch_all(query, (session_id, limit))
+
+
+async def get_stats() -> Dict:
+    """Aggregate conversation statistics"""
+    totals = await Database.fetch_one(
+        """
+        SELECT COUNT(*) AS total_conversations,
+               COUNT(DISTINCT session_id) AS total_sessions,
+               AVG(confidence) AS avg_confidence,
+               AVG(response_time_ms) AS avg_response_time_ms,
+               SUM(used_fallback) AS fallback_count
+        FROM conversations
+        """
+    )
+    top_intents = await Database.fetch_all(
+        """
+        SELECT predicted_intent AS intent, COUNT(*) AS count
+        FROM conversations
+        GROUP BY predicted_intent
+        ORDER BY count DESC
+        LIMIT 10
+        """
+    )
+    return {
+        "total_conversations": int(totals["total_conversations"] or 0),
+        "total_sessions": int(totals["total_sessions"] or 0),
+        "avg_confidence": float(totals["avg_confidence"] or 0),
+        "avg_response_time_ms": float(totals["avg_response_time_ms"] or 0),
+        "fallback_count": int(totals["fallback_count"] or 0),
+        "top_intents": top_intents,
+    }

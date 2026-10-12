@@ -1,16 +1,21 @@
 # Core ML
 torch
 numpy
-nltk
+sentence-transformers
 
 # Database
 aiomysql
-pymysql
+cryptography  # needed for MySQL 8 default auth (caching_sha2_password)
 
 # API
 fastapi
 uvicorn[standard]
-python-multipart
+httpx
 
 # Utils
 python-dotenv
+
+# Dev
+pytest
+pytest-asyncio
+flake8

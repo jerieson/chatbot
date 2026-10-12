@@ -36,12 +36,21 @@ export interface Ability {
   hidden: boolean;
 }
 
-/** Mega Evolution or Primal Reversion, with its own types, stats and abilities. */
-export interface MegaForm {
+export interface MoveLists {
+  game: string | null;
+  level_up: MoveRow[];
+  machine: MoveRow[];
+  egg: MoveRow[];
+}
+
+/** Regional form, Mega Evolution or Primal Reversion, with its own types, stats and abilities. */
+export interface PokemonForm {
   slug: string;
   id: number;
   name: string;
-  kind: "mega" | "primal";
+  kind: "regional" | "mega" | "primal";
+  region: string | null; // Alola, Galar, Hisui, Paldea (regional forms)
+  moves: MoveLists | null; // regional forms have their own learnset; null = same as the base form
   item: { slug: string; name: string } | null; // Mega Stone or orb
   move: { slug: string; name: string } | null; // Mega Rayquaza: Dragon Ascent
   types: string[];
@@ -65,7 +74,7 @@ export interface Pokemon extends PokemonSummary {
   mythical: boolean;
   flavor_text: string;
   abilities: Ability[];
-  megas: MegaForm[];
+  forms: PokemonForm[];
   ev_yield: Partial<Stats>;
   catch_rate: number | null;
   base_friendship: number | null;
@@ -76,7 +85,7 @@ export interface Pokemon extends PokemonSummary {
   egg_cycles: number | null;
   type_defenses: Record<string, number>;
   evolution: EvolutionNode;
-  moves: { game: string | null; level_up: MoveRow[]; machine: MoveRow[]; egg: MoveRow[] };
+  moves: MoveLists;
   previous: PokemonSummary | null;
   next: PokemonSummary | null;
 }

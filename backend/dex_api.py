@@ -29,7 +29,7 @@ def create_router(pokedex: Pokedex) -> APIRouter:
     # Mega Stones / Primal orbs -> the forms they unlock, for item pages
     forms_by_item: Dict[str, List[Dict]] = {}
     for species_slug, p in pokedex.pokemon.items():
-        for form in p.get("megas", []):
+        for form in p.get("forms", []):
             if form["item"]:
                 forms_by_item.setdefault(form["item"], []).append(
                     {"slug": form["slug"], "name": form["name"], "id": form["id"], "types": form["types"],
@@ -39,11 +39,22 @@ def create_router(pokedex: Pokedex) -> APIRouter:
         return [{"slug": a["ability"], "hidden": a["hidden"], **pokedex.abilities.get(a["ability"], {})}
                 for a in abilities]
 
-    def mega_form(form: Dict) -> Dict:
+    def move_lists(learnset: Optional[Dict]) -> Optional[Dict]:
+        if not learnset:
+            return None
+        return {
+            "game": learnset.get("game"),
+            "level_up": [row for lvl, m in learnset.get("level_up", []) if (row := move_row(m, level=lvl))],
+            "machine": [row for m in learnset.get("machine", []) if (row := move_row(m))],
+            "egg": [row for m in learnset.get("egg", []) if (row := move_row(m))],
+        }
+
+    def form_view(form: Dict) -> Dict:
         item = pokedex.items.get(form["item"] or "")
         move = pokedex.moves.get(form["move"] or "")
         return {
-            **form,
+            **{k: v for k, v in form.items() if k != "learnset"},
+            "moves": move_lists(form.get("learnset")),  # None: same moves as the base form (Megas)
             "abilities": expand_abilities(form["abilities"]),
             "stat_total": sum(form["stats"].values()),
             "type_defenses": {t: pokedex.effectiveness(t, form["types"]) for t in pokedex.types},
@@ -75,21 +86,15 @@ def create_router(pokedex: Pokedex) -> APIRouter:
         if p is None:
             raise HTTPException(status_code=404, detail="Pokemon not found")
 
-        learnset = p.get("learnset") or {}
-        moves = {
-            "game": learnset.get("game"),
-            "level_up": [row for lvl, m in learnset.get("level_up", []) if (row := move_row(m, level=lvl))],
-            "machine": [row for m in learnset.get("machine", []) if (row := move_row(m))],
-            "egg": [row for m in learnset.get("egg", []) if (row := move_row(m))],
-        }
+        moves = move_lists(p.get("learnset")) or {"game": None, "level_up": [], "machine": [], "egg": []}
         abilities = expand_abilities(p.get("abilities", []))
         neighbours = {
             "previous": pokemon_summary(pokedex.by_id[p["id"] - 1]) if p["id"] - 1 in pokedex.by_id else None,
             "next": pokemon_summary(pokedex.by_id[p["id"] + 1]) if p["id"] + 1 in pokedex.by_id else None,
         }
         return {
-            **{k: v for k, v in p.items() if k not in ("learnset", "abilities", "megas")},
-            "megas": [mega_form(f) for f in p.get("megas", [])],
+            **{k: v for k, v in p.items() if k not in ("learnset", "abilities", "forms")},
+            "forms": [form_view(f) for f in p.get("forms", [])],
             "slug": slug,
             "abilities": abilities,
             "stat_total": sum(p["stats"].values()),

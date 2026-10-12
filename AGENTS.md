@@ -62,7 +62,7 @@ The embedding model (~130 MB) downloads from Hugging Face on first use, then wor
 - Confidence threshold: 0.5 (`CONFIDENCE_THRESHOLD`); chosen from the held-out eval (90% coverage, 98% precision)
 - After editing intents.json: retrain, check held-out accuracy in the output, re-run the migration
 - After editing knowledge/*.md or re-importing the Pokedex: the RAG index rebuilds automatically
-- Pokedex covers default forms plus Mega/Primal forms (with their stone or orb); no regional forms yet. Learnsets come from the newest game with data
+- Pokedex covers default forms plus regional forms (own learnsets) and Mega/Primal forms (with their stone or orb). Learnsets come from the newest game with data
 - Pokedex page: clean light tables; Gengar purple theme is only for the chat widget
 - Sprites load from PokeAPI's sprite repo on GitHub (animated Black/White up to #649, static after; shiny via the star button). A missing sprite shows a silhouette of the closest one we have
 - LLM fallback is disabled unless `GROQ_API_KEY` or `OPENROUTER_API_KEY` is set (both have free tiers)

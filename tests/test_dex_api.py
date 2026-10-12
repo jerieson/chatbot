@@ -68,13 +68,27 @@ def test_item_page_and_404s(client):
 
 
 def test_pokemon_page_includes_mega_forms(client):
-    megas = client.get("/dex/pokemon/charizard").json()["megas"]
+    megas = client.get("/dex/pokemon/charizard").json()["forms"]
     assert [m["name"] for m in megas] == ["Mega Charizard X", "Mega Charizard Y"]
     x = megas[0]
     assert x["types"] == ["fire", "dragon"] and x["item"] == {"slug": "charizardite-x", "name": "Charizardite X"}
     assert x["stat_total"] == 634 and x["type_defenses"]["dragon"] == 2
-    assert client.get("/dex/pokemon/rayquaza").json()["megas"][0]["move"]["name"] == "Dragon Ascent"
-    assert client.get("/dex/pokemon/pikachu").json()["megas"] == []
+    assert x["moves"] is None  # Megas keep the base learnset
+    assert client.get("/dex/pokemon/rayquaza").json()["forms"][0]["move"]["name"] == "Dragon Ascent"
+    assert client.get("/dex/pokemon/pikachu").json()["forms"] == []
+
+
+def test_pokemon_page_includes_regional_forms(client):
+    forms = client.get("/dex/pokemon/raichu").json()["forms"]
+    alolan = forms[0]
+    assert alolan["name"] == "Alolan Raichu" and alolan["kind"] == "regional" and alolan["region"] == "Alola"
+    assert alolan["types"] == ["electric", "psychic"] and alolan["item"] is None
+    assert any(m["type"] == "psychic" for m in alolan["moves"]["level_up"])
+    assert [f["kind"] for f in forms] == ["regional", "mega", "mega"]
+    tauros = [f["name"] for f in client.get("/dex/pokemon/tauros").json()["forms"]]
+    assert tauros == ["Paldean Tauros (Combat Breed)", "Paldean Tauros (Blaze Breed)", "Paldean Tauros (Aqua Breed)"]
+    names = [f["name"] for f in client.get("/dex/pokemon/darmanitan").json()["forms"]]
+    assert names == ["Galarian Darmanitan"]  # Zen Mode is a battle form, not a regional form
 
 
 def test_mega_stone_page_links_its_form(client):
@@ -82,6 +96,11 @@ def test_mega_stone_page_links_its_form(client):
     assert forms == [{"slug": "gengar-mega", "name": "Mega Gengar", "id": 10038, "types": ["ghost", "poison"],
                       "species": "gengar", "species_name": "Gengar", "species_id": 94}]
     assert client.get("/dex/item/red-orb").json()["mega_forms"][0]["slug"] == "groudon-primal"
+
+
+def test_search_finds_regional_forms(client):
+    result = client.get("/dex/search", params={"q": "alolan vulpix"}).json()["results"][0]
+    assert result["slug"] == "vulpix" and result["form"] == "vulpix-alola" and result["types"] == ["ice"]
 
 
 def test_search_finds_mega_forms(client):

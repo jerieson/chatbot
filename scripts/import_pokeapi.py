@@ -61,6 +61,9 @@ SPECIAL_TRIGGERS = {
     "meltan-candies": "by feeding it 400 Meltan Candies in Pokemon GO",
 }
 MEGA_STONE_CATEGORY = "44"
+REGIONAL_FORM = re.compile(r"-(alola|galar|hisui|paldea)(-|$)")
+# Match REGIONAL_FORM but are battle modes, totems or costumes rather than regional forms
+NOT_REGIONAL_FORMS = {"raticate-totem-alola", "marowak-totem", "pikachu-alola-cap", "darmanitan-galar-zen"}
 PRIMAL_ORBS = {"groudon": "red-orb", "kyogre": "blue-orb"}
 # Mega Evolves by knowing a move instead of holding a stone
 STONELESS_MEGAS = {"rayquaza": "dragon-ascent"}
@@ -208,9 +211,11 @@ def build():
     # Default form of each species (e.g. deoxys-normal for deoxys)
     default_pokemon = {r["species_id"]: r for r in read("pokemon") if r["is_default"] == "1"}
     pokemon_species_id = {r["id"]: r["species_id"] for r in default_pokemon.values()}
-    # Mega Evolutions and Primal Reversions get their own types, stats and abilities
+    # Mega Evolutions, Primal Reversions and regional forms get their own types, stats and abilities
     mega_rows = [r for r in read("pokemon") if re.search(r"-(mega|primal)(-|$)", r["identifier"])]
-    loaded_ids = set(pokemon_species_id) | {r["id"] for r in mega_rows}
+    regional_rows = [r for r in read("pokemon") if REGIONAL_FORM.search(r["identifier"])
+                     and r["identifier"] not in NOT_REGIONAL_FORMS]
+    loaded_ids = set(pokemon_species_id) | {r["id"] for r in mega_rows + regional_rows}
 
     stats = defaultdict(dict)
     ev_yield = defaultdict(dict)
@@ -245,10 +250,13 @@ def build():
         if r["pokemon_id"] in loaded_ids:
             pokemon_types[r["pokemon_id"]].append(type_slug[r["type_id"]])
 
-    megas = build_megas(mega_rows, species_slug, items, read("items"), stats, pokemon_types,
-                        pokemon_abilities, ev_yield)
+    # Learnsets for default forms (keyed by species) and regional forms (keyed by form); Megas share the base one
+    learnset_keys = {pid: species_slug[sid] for pid, sid in pokemon_species_id.items()}
+    learnset_keys.update({r["id"]: r["identifier"] for r in regional_rows})
+    learnsets = build_learnsets(learnset_keys, move_slug, group_slug, group_order, group_names)
+    forms = build_forms(mega_rows, regional_rows, species_slug, items, read("items"), stats, pokemon_types,
+                        pokemon_abilities, ev_yield, learnsets)
     evolutions = build_evolutions(species_slug, item_slug, items, move_slug, moves, type_slug)
-    learnsets = build_learnsets(pokemon_species_id, species_slug, move_slug, group_slug, group_order, group_names)
 
     pokemon = {}
     for r in species_rows:
@@ -284,7 +292,7 @@ def build():
             "gender_rate": to_int(r["gender_rate"]),
             "egg_cycles": to_int(r["hatch_counter"]),
             "learnset": learnsets.get(slug),
-            "megas": megas.get(slug, []),
+            "forms": forms.get(slug, []),
         }
 
     generations = {
@@ -301,7 +309,8 @@ def build():
         "meta": {
             "source": "https://github.com/PokeAPI/pokeapi (data/v2/csv)",
             "generated": date.today().isoformat(),
-            "notes": "Default forms only; learnsets from the newest main-series game with data.",
+            "notes": "Default forms plus Mega, Primal and regional forms; "
+                     "learnsets from the newest main-series game with data.",
         },
         "types": types,
         "type_chart": type_chart,
@@ -314,8 +323,11 @@ def build():
     }
 
 
-def build_megas(mega_rows, species_slug, items, item_rows, stats, pokemon_types, pokemon_abilities, ev_yield):
-    """Per species slug: its Mega/Primal forms with stats, types and the item that triggers them."""
+def build_forms(mega_rows, regional_rows, species_slug, items, item_rows, stats, pokemon_types,
+                pokemon_abilities, ev_yield, learnsets):
+    """Per species slug: its regional, Mega and Primal forms with their own stats and types.
+
+    Megas/Primals also get the item (or move) that triggers them; regional forms get their own learnset."""
     form_names = {}  # pokemon id -> English name like "Mega Charizard X"
     form_pokemon = {r["id"]: r["pokemon_id"] for r in read("pokemon_forms")}
     for r in read("pokemon_form_names"):
@@ -341,18 +353,26 @@ def build_megas(mega_rows, species_slug, items, item_rows, stats, pokemon_types,
         return None
 
     megas = defaultdict(list)
-    for r in sorted(mega_rows, key=lambda r: int(r["id"])):
+    # Regional forms first (tabs read: Slowbro | Galarian Slowbro | Mega Slowbro)
+    rows = [(r, "regional") for r in regional_rows] + [(r, "mega") for r in mega_rows]
+    for r, group in sorted(rows, key=lambda x: (x[1] != "regional", int(x[0]["id"]))):
         species = species_slug[r["species_id"]]
         slug, pid = r["identifier"], r["id"]
-        if slug.endswith("-primal"):
+        region = None
+        if group == "regional":
+            kind, item = "regional", None
+            region = REGIONAL_FORM.search(slug).group(1).title()
+        elif slug.endswith("-primal"):
             kind, item = "primal", PRIMAL_ORBS.get(species)
         else:
             kind, item = "mega", None if species in STONELESS_MEGAS else stone_for(slug, pid, species)
+        name = form_names.get(pid, slug.replace("-", " ").title())
         megas[species].append({
             "slug": slug,
             "id": int(pid),
-            "name": form_names.get(pid, slug.replace("-", " ").title()),
+            "name": name.removeprefix("Standard "),  # "Standard Galarian Darmanitan"
             "kind": kind,
+            "region": region,
             "item": item,
             "move": STONELESS_MEGAS.get(species) if kind == "mega" else None,
             "types": pokemon_types[pid],
@@ -361,6 +381,7 @@ def build_megas(mega_rows, species_slug, items, item_rows, stats, pokemon_types,
             "ev_yield": ev_yield[pid],
             "height_m": int(r["height"]) / 10,
             "weight_kg": int(r["weight"]) / 10,
+            "learnset": learnsets.get(slug),
         })
     for forms in megas.values():
         # Same display name for gender variants (Mega Meowstic): add the variant from the slug
@@ -460,11 +481,12 @@ def build_evolutions(species_slug, item_slug, items, move_slug, moves, type_slug
     return methods
 
 
-def build_learnsets(pokemon_species_id, species_slug, move_slug, group_slug, group_order, group_names):
-    """Per species: level-up and TM moves from the preferred (or newest) game with data."""
+def build_learnsets(learnset_keys, move_slug, group_slug, group_order, group_names):
+    """Per key in `learnset_keys` (pokemon id -> species or form slug): level-up, egg and TM moves
+    from the preferred (or newest) game with data."""
     by_pokemon = defaultdict(lambda: defaultdict(list))
     for r in read("pokemon_moves"):
-        if r["pokemon_id"] not in pokemon_species_id or r["move_id"] not in move_slug:
+        if r["pokemon_id"] not in learnset_keys or r["move_id"] not in move_slug:
             continue
         group = group_slug[r["version_group_id"]]
         if group in SKIPPED_LEARNSET_GROUPS:
@@ -487,7 +509,7 @@ def build_learnsets(pokemon_species_id, species_slug, move_slug, group_slug, gro
                 egg.add(move)
             elif r["pokemon_move_method_id"] == "4":  # TM / machine
                 machine.add(move)
-        learnsets[species_slug[pokemon_species_id[pokemon_id]]] = {
+        learnsets[learnset_keys[pokemon_id]] = {
             "game": " / ".join(group_names[group]),
             "level_up": sorted(([lvl, m] for m, lvl in level.items()), key=lambda x: (x[0], x[1])),
             "machine": sorted(machine),

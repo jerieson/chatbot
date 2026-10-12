@@ -90,9 +90,9 @@ class Pokedex:
         self.pseudo_legendaries: List[str] = data["pseudo_legendaries"]
         self.abilities: Dict[str, dict] = data.get("abilities", {})
         self.by_id: Dict[int, str] = {p["id"]: slug for slug, p in self.pokemon.items()}
-        # Mega / Primal form slug -> (species slug, form data)
+        # Regional / Mega / Primal form slug -> (species slug, form data)
         self.forms: Dict[str, Tuple[str, dict]] = {
-            form["slug"]: (slug, form) for slug, p in self.pokemon.items() for form in p.get("megas", [])
+            form["slug"]: (slug, form) for slug, p in self.pokemon.items() for form in p.get("forms", [])
         }
 
         self.starters = {s for g in self.generations.values() for s in g["starters"]}
@@ -211,7 +211,7 @@ class Pokedex:
         return " ".join(out)
 
     def search(self, query: str, limit: int = 8) -> List[Tuple[str, str]]:
-        """Pokemon, Mega forms, moves and items whose name matches `query`, best first, as (kind, slug).
+        """Pokemon, their forms, moves and items whose name matches `query`, best first, as (kind, slug).
 
         Ranks exact > prefix > word prefix > substring, Pokemon before moves before items;
         falls back to typo matching. "#94" or "94" finds a Pokemon by National Dex number.

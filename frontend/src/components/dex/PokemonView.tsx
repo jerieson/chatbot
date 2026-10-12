@@ -15,21 +15,30 @@ import {
   statRange,
   titleCase,
 } from "@/lib/dex";
-import type { EvolutionNode, MegaForm, MoveRow, Pokemon, Stats } from "@/types/dex";
-import { DataRow, DataTable, DexLink, ItemSprite, PokemonSprite, SectionTitle, TypeBadge } from "@/components/dex/parts";
+import type { EvolutionNode, MoveRow, Pokemon, PokemonForm, Stats } from "@/types/dex";
+import {
+  DataRow,
+  DataTable,
+  DexLink,
+  ItemSprite,
+  PokemonSprite,
+  SectionTitle,
+  TypeBadge,
+} from "@/components/dex/parts";
 
 interface PokemonViewProps {
   pokemon: Pokemon;
-  initialForm?: string; // Mega form slug from the URL, e.g. #/pokemon/gengar/gengar-mega
+  initialForm?: string; // form slug from the URL, e.g. #/pokemon/gengar/gengar-mega or #/pokemon/vulpix/vulpix-alola
   shiny: boolean;
   onToggleShiny: () => void;
 }
 
 export const PokemonView = ({ pokemon: p, initialForm, shiny, onToggleShiny }: PokemonViewProps) => {
   const [formSlug, setFormSlug] = useState(initialForm ?? null);
-  const form: MegaForm | undefined = p.megas.find((m) => m.slug === formSlug);
-  // Everything that changes with Mega Evolution comes from the selected form
+  const form: PokemonForm | undefined = p.forms.find((f) => f.slug === formSlug);
+  // Everything that differs between forms comes from the selected one
   const shown = form ?? p;
+  const moves = form?.moves ?? p.moves;
   const displayName = form?.name ?? p.name;
 
   const evYield = Object.entries(shown.ev_yield)
@@ -71,10 +80,11 @@ export const PokemonView = ({ pokemon: p, initialForm, shiny, onToggleShiny }: P
             </button>
           </div>
 
-          {p.megas.length > 0 && <FormTabs pokemon={p} selected={formSlug} onSelect={setFormSlug} />}
+          {p.forms.length > 0 && <FormTabs pokemon={p} selected={formSlug} onSelect={setFormSlug} />}
           {form && <FormTrigger form={form} baseName={p.name} />}
 
-          {p.flavor_text && <p className="text-center text-sm italic text-zinc-600">“{p.flavor_text}”</p>}
+          {/* The Pokédex entry describes the species as a whole, so it can contradict a form */}
+          {!form && p.flavor_text && <p className="text-center text-sm italic text-zinc-600">“{p.flavor_text}”</p>}
         </div>
 
         <DataTable title="Pokédex data">
@@ -144,13 +154,13 @@ export const PokemonView = ({ pokemon: p, initialForm, shiny, onToggleShiny }: P
       </section>
 
       <section className="mt-10">
-        <SectionTitle>Moves learned by {p.name}</SectionTitle>
-        {p.moves.game && <p className="-mt-1 mb-4 text-xs text-zinc-500">From Pokémon {p.moves.game}</p>}
+        <SectionTitle>Moves learned by {form?.moves ? displayName : p.name}</SectionTitle>
+        {moves.game && <p className="-mt-1 mb-4 text-xs text-zinc-500">From Pokémon {moves.game}</p>}
         <div className="grid gap-8 lg:grid-cols-2">
-          <MoveTable title="By level up" moves={p.moves.level_up} showLevel />
+          <MoveTable title="By level up" moves={moves.level_up} showLevel />
           <div className="space-y-8">
-            <MoveTable title="By TM" moves={p.moves.machine} />
-            {p.moves.egg.length > 0 && <MoveTable title="Egg moves" moves={p.moves.egg} />}
+            <MoveTable title="By TM" moves={moves.machine} />
+            {moves.egg.length > 0 && <MoveTable title="Egg moves" moves={moves.egg} />}
           </div>
         </div>
       </section>
@@ -158,7 +168,7 @@ export const PokemonView = ({ pokemon: p, initialForm, shiny, onToggleShiny }: P
   );
 };
 
-/** Base form plus one tab per Mega/Primal form; Mega tabs show their stone. */
+/** Base form plus one tab per regional, Mega or Primal form; Mega tabs show their stone. */
 const FormTabs = ({
   pokemon: p,
   selected,
@@ -177,7 +187,7 @@ const FormTabs = ({
       <button role="tab" aria-selected={!selected} onClick={() => onSelect(null)} className={tab(!selected)}>
         {p.name}
       </button>
-      {p.megas.map((m) => (
+      {p.forms.map((m) => (
         <button
           key={m.slug}
           role="tab"
@@ -186,7 +196,9 @@ const FormTabs = ({
           className={tab(selected === m.slug)}
           title={m.item ? `Holding ${m.item.name}` : m.move ? `Knowing ${m.move.name}` : undefined}
         >
-          {m.item && <ItemSprite key={m.item.slug} src={itemSprite(m.item.slug)} name="" className="h-5 w-5" hideIfMissing />}
+          {m.item && (
+            <ItemSprite key={m.item.slug} src={itemSprite(m.item.slug)} name="" className="h-5 w-5" hideIfMissing />
+          )}
           {m.name}
         </button>
       ))}
@@ -194,8 +206,15 @@ const FormTabs = ({
   );
 };
 
-/** How the selected form is reached: the stone/orb to hold, or the move to know (Rayquaza). */
-const FormTrigger = ({ form, baseName }: { form: MegaForm; baseName: string }) => {
+/** Where the form comes from: its region, or the stone/orb to hold or move to know (Rayquaza). */
+const FormTrigger = ({ form, baseName }: { form: PokemonForm; baseName: string }) => {
+  if (form.kind === "regional") {
+    return (
+      <p className="text-center text-xs text-zinc-600">
+        Regional variant of {baseName} from the {form.region} region
+      </p>
+    );
+  }
   const how = form.item
     ? { verb: "holding", kind: "item", ...form.item }
     : form.move
